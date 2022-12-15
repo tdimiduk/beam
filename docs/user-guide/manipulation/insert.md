@@ -307,8 +307,8 @@ runInsert $
     To specify a conflict on the primary keys, use `conflictingFields primaryKey`.
 
 You can also specify how to change the record should it not match. For example, to append the e-mail
-as an alternate when you insert an existing row, you can use the `oldValues` argument to get access
-to the old value.
+as an alternate when you insert an existing row, you can use the `current_` value of one of the `fields to get access
+to the old value. The lambda also takes a second argument to get access to the excluded row (the one you were attempting to insert). 
 
 !beam-query
 ```haskell
@@ -320,7 +320,7 @@ let
 runInsert $
   insertOnConflict (customer chinookDb) (insertValues [newCustomer])
     (conflictingFields (\tbl -> primaryKey tbl))
-    (onConflictUpdateSet (\fields oldValues -> customerEmail fields <-. concat_ [ customerEmail oldValues, ";", val_ (customerEmail newCustomer)]))
+    (onConflictUpdateSet (\fields _ -> customerEmail fields <-. concat_ [ current_ (customerEmail fields), ";", val_ (customerEmail newCustomer)]))
 ```
 
 If you want to be even more particular and only do this transformation on rows corresponding to
